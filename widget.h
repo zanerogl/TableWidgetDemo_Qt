@@ -8,6 +8,7 @@
 #include <QStringList>
 #include <QTableWidgetItem>
 #include <QHeaderView>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -27,19 +28,21 @@ public:
     void initTableWidget();
 
     /**
-     * @brief loadUserInfo
-     */
-    /**
      * @brief loadUserInfo      加载用户数据
      * @param userName
      * @param userPassword
      */
     void loadUserInfo(QList<QString> userName, QList<QString> userPassword);
 
+    /**
+     * @brief removeUser
+     */
+    void removeUser();
 
-
-
-
+    /**
+     * @brief modifyUserInfo    修改用户信息
+     */
+    void modifyUserInfo();
 
 private:
     Ui::Widget *ui;

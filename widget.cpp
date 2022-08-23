@@ -76,7 +76,7 @@ void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword)
 //        pwdItem->setFont(nullFont);
         m_tableWidget->setItem(i, 1, pwdItem);
 
-        /*添加删除按钮*/
+        /*添加删除按钮和修改按钮*/
         QPushButton *btnDel = new QPushButton("Delete");
         QPushButton *btnUpdate = new QPushButton("Modify");
         QWidget *widget = new QWidget;
@@ -85,6 +85,18 @@ void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword)
         hboxlayout->addWidget(btnDel);
         hboxlayout->addWidget(btnUpdate);
         m_tableWidget->setCellWidget(i, 2, widget);
+        connect(btnDel, &QPushButton::clicked, this, &Widget::removeUser);
+        connect(btnUpdate, &QPushButton::clicked, this, &Widget::modifyUserInfo);
     }
+}
+
+void Widget::removeUser()
+{
+    qDebug()<<"removeUser";
+}
+
+void Widget::modifyUserInfo()
+{
+    qDebug()<<"modifyUserInfo";
 }
 
