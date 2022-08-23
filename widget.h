@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QTableWidget>
+#include <QPushButton>
 #include <QGridLayout>
 #include <QStringList>
 #include <QTableWidgetItem>
@@ -25,6 +26,20 @@ public:
      */
     void initTableWidget();
 
+    /**
+     * @brief loadUserInfo
+     */
+    /**
+     * @brief loadUserInfo      加载用户数据
+     * @param userName
+     * @param userPassword
+     */
+    void loadUserInfo(QList<QString> userName, QList<QString> userPassword);
+
+
+
+
+
 
 private:
     Ui::Widget *ui;
@@ -32,7 +47,9 @@ private:
     QTableWidget *m_tableWidget;
     QGridLayout *m_gridLayout;
 
-    QStringList m_headerStr = {"User","Password","Delete","Update"};
+    QPushButton *m_creatBtn;
+    QPushButton *m_closeBtn;
+    QStringList m_headerStr = {"User","Password","Option"};
 
 };
 #endif // WIDGET_H
