@@ -9,6 +9,21 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QDebug>
+#include <QMessageBox>
+#include <QItemDelegate>
+
+// 设置tableview某行/列不可编辑,
+class ReadOnlyDelegate: public QItemDelegate
+{
+
+public:
+    ReadOnlyDelegate(QWidget *parent = NULL):QItemDelegate(parent)
+    {}
+
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,const QModelIndex &index) const override;
+};
+
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -34,25 +49,42 @@ public:
      */
     void loadUserInfo(QList<QString> userName, QList<QString> userPassword);
 
+public slots:
     /**
-     * @brief removeUser
+     * @brief removeUser_
      */
-    void removeUser();
+    void removeUser_();
 
     /**
-     * @brief modifyUserInfo    修改用户信息
+     * @brief removeUser
+     * @param item
      */
-    void modifyUserInfo();
+    void removeUser(QTableWidgetItem *item);
+
+    /**
+     * @brief modifyUserInfo_    修改用户信息
+     */
+    void modifyUserInfo_();
+
+    /**
+     * @brief modifyUserInfo
+     * @param item
+     */
+    void modifyUserInfo(QPushButton *btn, QTableWidgetItem *item);
+
 
 private:
     Ui::Widget *ui;
 
     QTableWidget *m_tableWidget;
     QGridLayout *m_gridLayout;
-
+    QPushButton *btnDel;
+    QPushButton *btnUpdate;
     QPushButton *m_creatBtn;
-    QPushButton *m_closeBtn;
     QStringList m_headerStr = {"User","Password","Option"};
+//    void (Widget::*funtionPtr)(QTableWidgetItem *);
 
 };
 #endif // WIDGET_H
+
+
