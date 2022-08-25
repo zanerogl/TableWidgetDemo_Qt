@@ -28,12 +28,23 @@ void Widget::initTableWidget()
     m_creatBtn = new QPushButton(this);
     m_gridLayout = new QGridLayout(this);
 
+    QSpacerItem *verticalSpacer = new QSpacerItem(20, 15, QSizePolicy::Minimum, QSizePolicy::Fixed);
+    QSpacerItem *horizontalSpacer = new QSpacerItem(200, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+    QSpacerItem *verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Fixed);;
+    QSpacerItem *horizontalSpacer_2 = new QSpacerItem(200, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+
     m_creatBtn->setText("New Account");
+    m_creatBtn->setStyleSheet("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}");
 
-    m_gridLayout->addWidget(m_tableWidget, 0, 0, 1, 1);
-    m_gridLayout->addWidget(m_creatBtn, 1, 0, 1, 1);
+    m_gridLayout->addWidget(m_tableWidget, 0, 0, 1, 3);
+    m_gridLayout->addWidget(m_creatBtn, 2, 1, 1, 1);
+    m_gridLayout->addItem(verticalSpacer, 1, 1, 1, 1);
+    m_gridLayout->addItem(verticalSpacer_2, 3, 1, 1, 1);
+    m_gridLayout->addItem(horizontalSpacer, 2, 0, 1, 1);
+    m_gridLayout->addItem(horizontalSpacer_2, 2, 2, 1, 1);
 
-    m_gridLayout->setMargin(5);
+    m_gridLayout->setMargin(0);
 
     m_tableWidget->setColumnCount(m_headerStr.size());
     m_tableWidget->setHorizontalHeaderLabels(m_headerStr);
