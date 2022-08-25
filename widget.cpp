@@ -104,6 +104,9 @@ void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword)
         QPushButton *btnUpdate = new QPushButton("Modify");
         btnUpdate->setStyleSheet(QString::fromUtf8("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}"));
 
+        btnVec.push_back(btnDel);
+        btnVec.push_back(btnUpdate);
+
         QWidget *widget = new QWidget;
         QHBoxLayout *hboxlayout = new QHBoxLayout(widget);
         hboxlayout->setMargin(2);
@@ -168,9 +171,33 @@ void Widget::addUser()
 {
     qDebug()<<"Row count: "<<m_tableWidget->rowCount();
     m_tableWidget->setRowCount(m_tableWidget->rowCount()+1);
-//    QTableWidgetItem *item = new QTableWidgetItem();
-//    item->setText("sssss");
-//    m_tableWidget->setItem(m_tableWidget->rowCount()+1, 0, item);
+    /*用户名*/
+    QTableWidgetItem *nameItem = new QTableWidgetItem(tr("%1").arg("sd"));
+//    nameItem->setFlags(nameItem->flags() & (~Qt::ItemIsEditable));//第一列不可编辑
+    nameItem->setTextAlignment(Qt::AlignCenter);
+    m_tableWidget->setItem(m_tableWidget->rowCount()-1, 0, nameItem);
+
+    /*密码*/
+    QTableWidgetItem *pwdItem = new QTableWidgetItem(tr("%1").arg("sd"));
+//    pwdItem->setFlags(pwdItem->flags() & (~Qt::ItemIsEditable));//第二列不可编辑
+    pwdItem->setTextAlignment(Qt::AlignCenter);
+    m_tableWidget->setItem(m_tableWidget->rowCount()-1, 1, pwdItem);
+
+    /*添加删除按钮和修改按钮*/
+    QPushButton *btnDel = new QPushButton("Delete");
+    btnDel->setEnabled(false);
+    btnDel->setStyleSheet(QString::fromUtf8("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}"));
+
+    QPushButton *btnUpdate = new QPushButton("Modify");
+    btnUpdate->setEnabled(false);
+    btnUpdate->setStyleSheet(QString::fromUtf8("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}"));
+
+    QWidget *widget = new QWidget;
+    QHBoxLayout *hboxlayout = new QHBoxLayout(widget);
+    hboxlayout->setMargin(2);
+    hboxlayout->addWidget(btnDel);
+    hboxlayout->addWidget(btnUpdate);
+    m_tableWidget->setCellWidget(m_tableWidget->rowCount()-1, 2,  widget);
 
     m_creatBtn->hide();
     qDebug()<<"CreatBtn is clicked";
@@ -178,6 +205,7 @@ void Widget::addUser()
 
     m_saveBtn = new QPushButton(this);
     m_saveBtn->setStyleSheet("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}");
+
     m_saveBtn->setText("Save");
     m_gridLayout->addWidget(m_saveBtn, 1, 1, 2, 1);
 
@@ -193,6 +221,10 @@ void Widget::addUser()
         m_cancelBtn->hide();
         m_gridLayout->removeWidget(m_cancelBtn);    //这里不写remove的实现效果和写的一样，未找到原因
         m_gridLayout->addWidget(m_creatBtn, 1, 1, 2, 2);
+        btnDel->setEnabled(true);
+        btnUpdate->setEnabled(true);
+        connect(btnDel, &QPushButton::clicked, this, [=](){this->removeUser(nameItem);});
+        connect(btnUpdate, &QPushButton::clicked, this, [=](){this->modifyUserInfo(btnUpdate, nameItem);});
         m_creatBtn->show();
     });
 
