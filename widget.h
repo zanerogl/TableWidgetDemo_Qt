@@ -38,9 +38,9 @@ public:
     ~Widget();
 
     /**
-     * @brief initTableWidget   初始化控件
+     * @brief initUI   初始化界面
      */
-    void initTableWidget();
+    void initUI();
 
     /**
      * @brief loadUserInfo      加载用户数据

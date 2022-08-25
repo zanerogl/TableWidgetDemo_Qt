@@ -7,7 +7,7 @@ Widget::Widget(QWidget *parent)
 {
     ui->setupUi(this);
 
-    initTableWidget();
+    initUI();
 
     QList<QString> userName;
     QList<QString> userPassword;
@@ -22,33 +22,30 @@ Widget::~Widget()
     delete ui;
 }
 
-void Widget::initTableWidget()
+void Widget::initUI()
 {
     m_tableWidget = new QTableWidget(this);
     m_creatBtn = new QPushButton(this);
     m_gridLayout = new QGridLayout(this);
 
+    /*弹簧*/
     QSpacerItem *verticalSpacer = new QSpacerItem(20, 15, QSizePolicy::Minimum, QSizePolicy::Fixed);
     QSpacerItem *horizontalSpacer = new QSpacerItem(200, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
     QSpacerItem *verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Fixed);;
     QSpacerItem *horizontalSpacer_2 = new QSpacerItem(200, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
-
-    m_creatBtn->setText("New Account");
-    m_creatBtn->setStyleSheet("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}");
-
+    /*设置布局*/
     m_gridLayout->addWidget(m_tableWidget, 0, 0, 1, 3);
     m_gridLayout->addWidget(m_creatBtn, 2, 1, 1, 1);
     m_gridLayout->addItem(verticalSpacer, 1, 1, 1, 1);
     m_gridLayout->addItem(verticalSpacer_2, 3, 1, 1, 1);
     m_gridLayout->addItem(horizontalSpacer, 2, 0, 1, 1);
     m_gridLayout->addItem(horizontalSpacer_2, 2, 2, 1, 1);
+    m_gridLayout->setMargin(3);
 
-    m_gridLayout->setMargin(0);
-
+    /*设置TableWidget属性*/
     m_tableWidget->setColumnCount(m_headerStr.size());
     m_tableWidget->setHorizontalHeaderLabels(m_headerStr);
-
     QFont font = m_tableWidget->horizontalHeader()->font();
     font.setBold(true); //加粗
     font.setPixelSize(16);
@@ -58,7 +55,6 @@ void Widget::initTableWidget()
     {
         m_tableWidget->setColumnWidth(i,230);
     }
-
     m_tableWidget->setShowGrid(true);
     m_tableWidget->setGridStyle(Qt::DotLine);
 //    m_tableWidget->setSortingEnabled(true);   //排序
@@ -69,6 +65,10 @@ void Widget::initTableWidget()
     m_tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     m_tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_tableWidget->setTextElideMode(Qt::ElideRight);
+
+    /*设置按钮属性*/
+    m_creatBtn->setText("New Account");
+    m_creatBtn->setStyleSheet("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}");
 }
 
 void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword)
