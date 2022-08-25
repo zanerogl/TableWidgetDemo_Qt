@@ -15,11 +15,20 @@ Widget::Widget(QWidget *parent)
     userPassword<<"123"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456";
 
     loadUserInfo(userName, userPassword);
+
+    connect(m_creatBtn, &QPushButton::clicked, this, &Widget::addUser);
 }
 
 Widget::~Widget()
 {
     delete ui;
+
+    deleteButtons();
+    if(m_tableWidget!=NULL)
+    {
+        delete m_tableWidget;
+        m_tableWidget=nullptr;
+    }
 }
 
 void Widget::initUI()
@@ -28,20 +37,13 @@ void Widget::initUI()
     m_creatBtn = new QPushButton(this);
     m_gridLayout = new QGridLayout(this);
 
-    /*弹簧*/
-    QSpacerItem *verticalSpacer = new QSpacerItem(20, 15, QSizePolicy::Minimum, QSizePolicy::Fixed);
-    QSpacerItem *horizontalSpacer = new QSpacerItem(200, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
-    QSpacerItem *verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Fixed);;
-    QSpacerItem *horizontalSpacer_2 = new QSpacerItem(200, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
-
     /*设置布局*/
-    m_gridLayout->addWidget(m_tableWidget, 0, 0, 1, 3);
-    m_gridLayout->addWidget(m_creatBtn, 2, 1, 1, 1);
-    m_gridLayout->addItem(verticalSpacer, 1, 1, 1, 1);
-    m_gridLayout->addItem(verticalSpacer_2, 3, 1, 1, 1);
-    m_gridLayout->addItem(horizontalSpacer, 2, 0, 1, 1);
-    m_gridLayout->addItem(horizontalSpacer_2, 2, 2, 1, 1);
+    QSpacerItem *verticalSpacer = new QSpacerItem(20, 60, QSizePolicy::Minimum, QSizePolicy::Fixed);
+    m_gridLayout->addWidget(m_tableWidget, 0, 0, 1, 4);
+    m_gridLayout->addWidget(m_creatBtn, 1, 1, 2, 2);    //位于第一行第一列，占两行两列是因为点击后出现的两个按钮需要占两列
+    m_gridLayout->addItem(verticalSpacer, 2, 1, 1, 1);
     m_gridLayout->setMargin(3);
+
 
     /*设置TableWidget属性*/
     m_tableWidget->setColumnCount(m_headerStr.size());
@@ -51,13 +53,13 @@ void Widget::initUI()
     font.setPixelSize(16);
     m_tableWidget->horizontalHeader()->setFont(font);
 
-    for(int i = 0; i < m_tableWidget->columnCount(); i++)
-    {
-        m_tableWidget->setColumnWidth(i,230);
-    }
+    m_tableWidget->setColumnWidth(0,200);
+    m_tableWidget->setColumnWidth(1,300);
+    m_tableWidget->setColumnWidth(2,100);
+
     m_tableWidget->setShowGrid(true);
-    m_tableWidget->setGridStyle(Qt::DotLine);
-//    m_tableWidget->setSortingEnabled(true);   //排序
+//    m_tableWidget->setGridStyle(Qt::DotLine);   //点线网格
+//    m_tableWidget->setSortingEnabled(true);     //排序
     m_tableWidget->horizontalHeader()->setStretchLastSection(true);//最后一行可拉伸
     m_tableWidget->verticalHeader()->setVisible(false);
     m_tableWidget->setStyleSheet("QTableWidget{ background-color: #c0c0c0; alternate-background-color: #606060; selection-background-color:#282828;}");
@@ -75,7 +77,6 @@ void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword)
 {
 //    ReadOnlyDelegate *readOnlyDelegate = new ReadOnlyDelegate(this);
     m_tableWidget->clearContents();
-
     if(userName.size() != userPassword.size())
     {
         return;
@@ -88,16 +89,13 @@ void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword)
         /*用户名*/
         QTableWidgetItem *nameItem = new QTableWidgetItem(tr("%1").arg(userName.at(i)));
         nameItem->setFlags(nameItem->flags() & (~Qt::ItemIsEditable));//第一列不可编辑
-//        nameItem->setFont(nullFont);
         nameItem->setTextAlignment(Qt::AlignCenter);
         m_tableWidget->setItem(i, 0, nameItem);
-//        qDebug()<<m_tableWidget->item(i, 0)->flags();
 
         /*密码*/
         QTableWidgetItem *pwdItem = new QTableWidgetItem(tr("%1").arg(userPassword.at(i)));
         pwdItem->setFlags(pwdItem->flags() & (~Qt::ItemIsEditable));//第二列不可编辑
         pwdItem->setTextAlignment(Qt::AlignCenter);
-//        pwdItem->setFont(nullFont);
         m_tableWidget->setItem(i, 1, pwdItem);
 
         /*添加删除按钮和修改按钮*/
@@ -116,74 +114,30 @@ void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword)
         connect(btnDel, &QPushButton::clicked, [=](){this->removeUser(nameItem);});
         connect(btnUpdate, &QPushButton::clicked, [=](){this->modifyUserInfo(btnUpdate, nameItem);});
     }
-
 }
 
-void Widget::removeUser_()
+void Widget::deleteButtons()
 {
-    QObject *obj = sender();    //当一个obejct发生信号时，系统会记录下发生者，通过sender函数可以获取发送者的地址
-    QPushButton *btn = qobject_cast<QPushButton*>(obj); //通过模板对类型进行动态的转换，这里是QObject->QPushButton
-
-    int x = btn->frameGeometry().x();
-    int y = btn->frameGeometry().y();
-
-    QModelIndex index = m_tableWidget->indexAt(QPoint(x, y));
-    int row = index.row();
-    qDebug()<<__LINE__<<row;
-
-    if(QMessageBox::question(this, "Tip","Are you sure you want to delete?", QMessageBox::Yes|QMessageBox::No)== QMessageBox::Yes)
+    /*释放table_user表格中动态申请的QPushButton*/
+    int len = btnVec.length();
+    for(int i = 0; i<len; i++)
     {
-       m_tableWidget->removeRow(row);
+        QPushButton *btnPtr = btnVec.at(i);
+        if(btnPtr != nullptr)
+        {
+            delete btnPtr;
+            btnPtr = nullptr;
+        }
     }
-    qDebug()<<"removeUser";
 }
 
 void Widget::removeUser(QTableWidgetItem *item)
 {
     int row = m_tableWidget->row(item);
-    //   qDebug() << m_tableWidget->row(item);
     if(QMessageBox::question(this, "Tip","Are you sure you want to delete?", QMessageBox::Yes|QMessageBox::No)== QMessageBox::Yes)
     {
        m_tableWidget->removeRow(row);
     }
-}
-
-void Widget::modifyUserInfo_()
-{
-    QObject *obj = sender();
-    QPushButton *btn = qobject_cast<QPushButton*>(obj);
-
-    int x = btn->frameGeometry().x();
-    int y = btn->frameGeometry().y();
-    qDebug()<<__LINE__<<"x:"<<x<<"y:"<<y;
-
-    QModelIndex index = m_tableWidget->indexAt(QPoint(x, y));
-//    qDebug()<<__LINE__<<m_tableWidget->itemAt(x, y);
-    int row = index.row();          //获取当前行
-    int column = index.column();    //获取当前列
-    qDebug()<<__LINE__<<"row:"<<row<<"column:"<<column;
-
-    Qt::ItemFlags flag1 = m_tableWidget->item(row, 0)->flags();
-    Qt::ItemFlags flag2 = m_tableWidget->item(row, 1)->flags();
-    qDebug()<<__LINE__<<"Flag1:"<<flag1;
-    qDebug()<<__LINE__<<"Flag2:"<<flag2;
-
-    if(btn->text() == "Modify")
-    {
-        btn->setText("Confirm");
-        qDebug()<<__LINE__<<m_tableWidget->item(row, column)->flags();
-
-        m_tableWidget->item(row, 0)->setFlags(flag1 | (Qt::ItemIsEditable));   //密码
-        m_tableWidget->item(row, 1)->setFlags(flag2 | (Qt::ItemIsEditable));   //用户名
-    }
-    else
-    {
-        btn->setText("Modify");
-        m_tableWidget->item(row, 0)->setFlags(flag1 & (~Qt::ItemIsEditable));   //密码
-        m_tableWidget->item(row, 1)->setFlags(flag2 & (~Qt::ItemIsEditable));   //用户名
-    }
-
-    qDebug()<<"modifyUserInfo";
 }
 
 void Widget::modifyUserInfo(QPushButton *btn, QTableWidgetItem *item)
@@ -195,8 +149,8 @@ void Widget::modifyUserInfo(QPushButton *btn, QTableWidgetItem *item)
 
     if(btn->text() == "Modify")
     {
-        btn->setText("Confirm");
-        qDebug()<<__LINE__<<m_tableWidget->item(row, column)->flags();
+        btn->setText("Save");
+//        qDebug()<<__LINE__<<m_tableWidget->item(row, column)->flags();
 
         m_tableWidget->item(row, 0)->setFlags(flag1 | (Qt::ItemIsEditable));   //密码
         m_tableWidget->item(row, 1)->setFlags(flag2 | (Qt::ItemIsEditable));   //用户名
@@ -207,7 +161,52 @@ void Widget::modifyUserInfo(QPushButton *btn, QTableWidgetItem *item)
         m_tableWidget->item(row, 0)->setFlags(flag1 & (~Qt::ItemIsEditable));   //密码
         m_tableWidget->item(row, 1)->setFlags(flag2 & (~Qt::ItemIsEditable));   //用户名
     }
-    qDebug() << m_tableWidget->row(item);
+//    qDebug() << m_tableWidget->row(item);
+}
+
+void Widget::addUser()
+{
+    qDebug()<<"Row count: "<<m_tableWidget->rowCount();
+    m_tableWidget->setRowCount(m_tableWidget->rowCount()+1);
+//    QTableWidgetItem *item = new QTableWidgetItem();
+//    item->setText("sssss");
+//    m_tableWidget->setItem(m_tableWidget->rowCount()+1, 0, item);
+
+    m_creatBtn->hide();
+    qDebug()<<"CreatBtn is clicked";
+    m_gridLayout->removeWidget(m_creatBtn);     //这里不写remove的实现效果和写的一样，未找到原因
+
+    m_saveBtn = new QPushButton(this);
+    m_saveBtn->setStyleSheet("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}");
+    m_saveBtn->setText("Save");
+    m_gridLayout->addWidget(m_saveBtn, 1, 1, 2, 1);
+
+    m_cancelBtn = new QPushButton(this);
+    m_cancelBtn->setStyleSheet("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}");
+    m_cancelBtn->setText("Cancel");
+    m_gridLayout->addWidget(m_cancelBtn, 1, 2, 2, 1);
+
+    connect(m_saveBtn, &QPushButton::clicked, this, [=]()
+    {
+        m_saveBtn->hide();
+        m_gridLayout->removeWidget(m_saveBtn);      //这里不写remove的实现效果和写的一样，未找到原因
+        m_cancelBtn->hide();
+        m_gridLayout->removeWidget(m_cancelBtn);    //这里不写remove的实现效果和写的一样，未找到原因
+        m_gridLayout->addWidget(m_creatBtn, 1, 1, 2, 2);
+        m_creatBtn->show();
+    });
+
+    connect(m_cancelBtn, &QPushButton::clicked, this, [=]()
+    {
+        m_saveBtn->hide();
+        m_gridLayout->removeWidget(m_saveBtn);      //这里不写remove的实现效果和写的一样，未找到原因
+        m_cancelBtn->hide();
+        m_gridLayout->removeWidget(m_cancelBtn);    //这里不写remove的实现效果和写的一样，未找到原因
+        m_gridLayout->addWidget(m_creatBtn, 1, 1, 2, 2);
+        m_creatBtn->show();
+        m_tableWidget->removeRow(m_tableWidget->rowCount()-1);  //删除未添加信息的行
+    });
+//    qDebug()<<m_creatBtn->pos();
 }
 
 QWidget *ReadOnlyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const //final
