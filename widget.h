@@ -44,6 +44,11 @@ public:
     ~Widget();
 
     /**
+     * @brief initProfile
+     */
+    void initProfile();
+
+    /**
      * @brief initUI   初始化界面
      */
     void initUI();
@@ -81,9 +86,19 @@ public slots:
     void addUser();
 
     /**
-     * @brief writeUserData 写入用户数据
+     * @brief writeUserData     写入用户数据
+     * @param group             组名：User*
+     * @param keyName           键名：UserName Password Premission
+     * @param valueName         键值：xxxx *** 1
      */
-    void writeUserData();
+    void writeUserData(QString group, QString keyName, QString valueName);
+
+    /**
+     * @brief deleteUserData    删除用户数据
+     * @param group             组名：User*
+     * @param keyName           键名：UserName Password Premission
+     */
+    void deleteUserData(QString group, QString keyName);
 
     /**
      * @brief readUserData  读取用户数据
@@ -105,6 +120,7 @@ private:
     QVector<QPushButton*>  btnVec;  //定义这个按钮指针容器的目的是为了方便一次性释放按钮内存
     QSettings *m_userInfo;
     QString m_filePath = QCoreApplication::applicationDirPath()+"/config/userinfo.ini";;
+    int userCount;
 
 
 //    void (Widget::*funtionPtr)(QTableWidgetItem *);
