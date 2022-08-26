@@ -9,12 +9,13 @@ Widget::Widget(QWidget *parent)
 
     initUI();
 
-    QList<QString> userName;
-    QList<QString> userPassword;
-    userName<<"Mary"<<"Mike"<<"Jack"<<"Alice"<<"Rose"<<"Jane"<<"Apple"<<"Orange"<<"Peach"<<"Tree";
-    userPassword<<"123"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456";
+//    QList<QString> userName;
+//    QList<QString> userPassword;
+//    userName<<"Mary"<<"Mike"<<"Jack"<<"Alice"<<"Rose"<<"Jane"<<"Apple"<<"Orange"<<"Peach"<<"Tree";
+//    userPassword<<"123"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456";
 
-    loadUserInfo(userName, userPassword);
+//    loadUserInfo(userName, userPassword);
+    loadUserInfo();
 
     connect(m_creatBtn, &QPushButton::clicked, this, &Widget::addUser);
 }
@@ -53,9 +54,10 @@ void Widget::initUI()
     font.setPixelSize(16);
     m_tableWidget->horizontalHeader()->setFont(font);
 
-    m_tableWidget->setColumnWidth(0,200);
-    m_tableWidget->setColumnWidth(1,300);
-    m_tableWidget->setColumnWidth(2,100);
+    m_tableWidget->setColumnWidth(0, 200);
+    m_tableWidget->setColumnWidth(1, 300);
+    m_tableWidget->setColumnWidth(2, 100);
+    m_tableWidget->setColumnWidth(3, 120);
 
     m_tableWidget->setShowGrid(true);
 //    m_tableWidget->setGridStyle(Qt::DotLine);   //点线网格
@@ -73,7 +75,7 @@ void Widget::initUI()
     m_creatBtn->setStyleSheet("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}");
 }
 
-void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword)
+void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword, QList<QString> permission)
 {
 //    ReadOnlyDelegate *readOnlyDelegate = new ReadOnlyDelegate(this);
     m_tableWidget->clearContents();
@@ -98,6 +100,12 @@ void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword)
         pwdItem->setTextAlignment(Qt::AlignCenter);
         m_tableWidget->setItem(i, 1, pwdItem);
 
+        /*权限*/
+        QTableWidgetItem *permissItem = new QTableWidgetItem(tr("%1").arg(permission.at(i)));
+        permissItem->setFlags(permissItem->flags() & (~Qt::ItemIsEditable));//第三列不可编辑
+        permissItem->setTextAlignment(Qt::AlignCenter);
+        m_tableWidget->setItem(i, 2, permissItem);
+
         /*添加删除按钮和修改按钮*/
         QPushButton *btnDel = new QPushButton("Delete");
         btnDel->setStyleSheet(QString::fromUtf8("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}"));
@@ -112,7 +120,7 @@ void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword)
         hboxlayout->setMargin(2);
         hboxlayout->addWidget(btnDel);
         hboxlayout->addWidget(btnUpdate);
-        m_tableWidget->setCellWidget(i, 2,  widget);
+        m_tableWidget->setCellWidget(i, 3,  widget);
 
         connect(btnDel, &QPushButton::clicked, [=](){this->removeUser(nameItem);});
         connect(btnUpdate, &QPushButton::clicked, [=](){this->modifyUserInfo(btnUpdate, nameItem);});
@@ -153,16 +161,16 @@ void Widget::modifyUserInfo(QPushButton *btn, QTableWidgetItem *item)
     if(btn->text() == "Modify")
     {
         btn->setText("Save");
-//        qDebug()<<__LINE__<<m_tableWidget->item(row, column)->flags();
-
-        m_tableWidget->item(row, 0)->setFlags(flag1 | (Qt::ItemIsEditable));   //密码
-        m_tableWidget->item(row, 1)->setFlags(flag2 | (Qt::ItemIsEditable));   //用户名
+        m_tableWidget->item(row, 0)->setFlags(flag1 | (Qt::ItemIsEditable));   //密码->可编辑
+        m_tableWidget->item(row, 1)->setFlags(flag2 | (Qt::ItemIsEditable));   //用户名->可编辑
+        /*权限不可编辑*/
     }
     else
     {
         btn->setText("Modify");
-        m_tableWidget->item(row, 0)->setFlags(flag1 & (~Qt::ItemIsEditable));   //密码
-        m_tableWidget->item(row, 1)->setFlags(flag2 & (~Qt::ItemIsEditable));   //用户名
+        m_tableWidget->item(row, 0)->setFlags(flag1 & (~Qt::ItemIsEditable));   //密码->不可编辑
+        m_tableWidget->item(row, 1)->setFlags(flag2 & (~Qt::ItemIsEditable));   //用户名->不可编辑
+        /*权限不可编辑*/
     }
 //    qDebug() << m_tableWidget->row(item);
 }
@@ -173,15 +181,19 @@ void Widget::addUser()
     m_tableWidget->setRowCount(m_tableWidget->rowCount()+1);
     /*用户名*/
     QTableWidgetItem *nameItem = new QTableWidgetItem(tr("%1").arg("sd"));
-//    nameItem->setFlags(nameItem->flags() & (~Qt::ItemIsEditable));//第一列不可编辑
     nameItem->setTextAlignment(Qt::AlignCenter);
     m_tableWidget->setItem(m_tableWidget->rowCount()-1, 0, nameItem);
 
     /*密码*/
     QTableWidgetItem *pwdItem = new QTableWidgetItem(tr("%1").arg("sd"));
-//    pwdItem->setFlags(pwdItem->flags() & (~Qt::ItemIsEditable));//第二列不可编辑
     pwdItem->setTextAlignment(Qt::AlignCenter);
     m_tableWidget->setItem(m_tableWidget->rowCount()-1, 1, pwdItem);
+
+    /*权限*/
+    QTableWidgetItem *permissItem = new QTableWidgetItem(tr("%1").arg("1"));
+    permissItem->setFlags(permissItem->flags() & (~Qt::ItemIsEditable));//第三列不可编辑
+    permissItem->setTextAlignment(Qt::AlignCenter);
+    m_tableWidget->setItem(m_tableWidget->rowCount()-1, 2, permissItem);
 
     /*添加删除按钮和修改按钮*/
     QPushButton *btnDel = new QPushButton("Delete");
@@ -197,7 +209,7 @@ void Widget::addUser()
     hboxlayout->setMargin(2);
     hboxlayout->addWidget(btnDel);
     hboxlayout->addWidget(btnUpdate);
-    m_tableWidget->setCellWidget(m_tableWidget->rowCount()-1, 2,  widget);
+    m_tableWidget->setCellWidget(m_tableWidget->rowCount()-1, 3,  widget);
 
     m_creatBtn->hide();
     qDebug()<<"CreatBtn is clicked";
@@ -220,12 +232,20 @@ void Widget::addUser()
         m_gridLayout->removeWidget(m_saveBtn);      //这里不写remove的实现效果和写的一样，未找到原因
         m_cancelBtn->hide();
         m_gridLayout->removeWidget(m_cancelBtn);    //这里不写remove的实现效果和写的一样，未找到原因
+
         m_gridLayout->addWidget(m_creatBtn, 1, 1, 2, 2);
+
         btnDel->setEnabled(true);
         btnUpdate->setEnabled(true);
+
+        nameItem->setFlags(nameItem->flags() & (~Qt::ItemIsEditable));  //第一列不可编辑
+        pwdItem->setFlags(pwdItem->flags() & (~Qt::ItemIsEditable));    //第二列不可编辑
+
         connect(btnDel, &QPushButton::clicked, this, [=](){this->removeUser(nameItem);});
         connect(btnUpdate, &QPushButton::clicked, this, [=](){this->modifyUserInfo(btnUpdate, nameItem);});
+
         m_creatBtn->show();
+        qDebug()<<nameItem->text()<<pwdItem->text();
     });
 
     connect(m_cancelBtn, &QPushButton::clicked, this, [=]()
@@ -238,7 +258,17 @@ void Widget::addUser()
         m_creatBtn->show();
         m_tableWidget->removeRow(m_tableWidget->rowCount()-1);  //删除未添加信息的行
     });
-//    qDebug()<<m_creatBtn->pos();
+}
+
+void Widget::writeUserData()
+{
+    m_userInfo = new QSettings(m_filePath,QSettings::IniFormat);
+
+}
+
+void Widget::readUserData()
+{
+
 }
 
 QWidget *ReadOnlyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const //final

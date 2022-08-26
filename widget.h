@@ -12,6 +12,9 @@
 #include <QMessageBox>
 #include <QItemDelegate>
 #include <QVector>
+#include <QSettings>
+#include <QString>
+#include <QtCore>
 
 // 设置tableview某行/列不可编辑 （未使用）
 class ReadOnlyDelegate: public QItemDelegate
@@ -25,6 +28,8 @@ public:
 };
 
 
+
+/*隐藏BUG:item未双击进入可编辑状态前，编辑item会导致程序崩溃退出*/
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -48,7 +53,7 @@ public:
      * @param userName
      * @param userPassword
      */
-    void loadUserInfo(QList<QString> userName, QList<QString> userPassword);
+    void loadUserInfo(QList<QString> userName = {}, QList<QString> userPassword = {}, QList<QString> permission = {});
 
     /**
      * @brief deleteButtons     删除按钮
@@ -75,6 +80,17 @@ public slots:
      */
     void addUser();
 
+    /**
+     * @brief writeUserData 写入用户数据
+     */
+    void writeUserData();
+
+    /**
+     * @brief readUserData  读取用户数据
+     */
+    void readUserData();
+
+
 private:
     Ui::Widget *ui;
 
@@ -85,8 +101,12 @@ private:
     QPushButton *m_creatBtn;
     QPushButton *m_saveBtn;
     QPushButton *m_cancelBtn;
-    QStringList m_headerStr = {"User","Password","Option"};
+    QStringList m_headerStr = {"User","Password", "Permission","Option"};
     QVector<QPushButton*>  btnVec;  //定义这个按钮指针容器的目的是为了方便一次性释放按钮内存
+    QSettings *m_userInfo;
+    QString m_filePath = QCoreApplication::applicationDirPath()+"/config/userinfo.ini";;
+
+
 //    void (Widget::*funtionPtr)(QTableWidgetItem *);
 
 };
