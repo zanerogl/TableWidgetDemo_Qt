@@ -99,7 +99,7 @@ void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword, 
 {
 //    ReadOnlyDelegate *readOnlyDelegate = new ReadOnlyDelegate(this);
     m_tableWidget->clearContents();
-    if(userName.size() != userPassword.size())
+    if(userName.size() != userPassword.size() /*|| userCount == 0*/)
     {
         return;
     }
@@ -172,9 +172,9 @@ void Widget::removeUser(QTableWidgetItem *item)
         qDebug()<<__LINE__<<"userCount:"<<userCount;
         int row = m_tableWidget->row(item);
         m_tableWidget->removeRow(row);
-        deleteUserData("User" + QString::number(userCount), "UserName");
-        deleteUserData("User" + QString::number(userCount), "Password");
-        deleteUserData("User" + QString::number(userCount), "Premission");
+//        deleteUserData("User" + QString::number(userCount), "UserName");
+//        deleteUserData("User" + QString::number(userCount), "Password");
+//        deleteUserData("User" + QString::number(userCount), "Premission");
     }
 }
 
@@ -241,7 +241,7 @@ void Widget::addUser()
     /*隐藏creatBtn*/
     m_creatBtn->hide();
 
-    m_gridLayout->removeWidget(m_creatBtn);     //这里不写remove的实现效果和写的一样，未找到原因
+//    m_gridLayout->removeWidget(m_creatBtn);     //这里不写remove的实现效果和写的一样，未找到原因
 
     m_saveBtn->show();
     m_cancelBtn->show();
@@ -249,12 +249,13 @@ void Widget::addUser()
     /*save按钮按下后添加行，写入配置文件*/
     connect(m_saveBtn, &QPushButton::clicked, this, [=]()
     {
+        qDebug()<<"SaveBtn is clicked---------------------";
         m_saveBtn->hide();
-        m_gridLayout->removeWidget(m_saveBtn);      //这里不写remove的实现效果和写的一样，未找到原因
+//        m_gridLayout->removeWidget(m_saveBtn);      //这里不写remove的实现效果和写的一样，未找到原因
         m_cancelBtn->hide();
-        m_gridLayout->removeWidget(m_cancelBtn);    //这里不写remove的实现效果和写的一样，未找到原因
+//        m_gridLayout->removeWidget(m_cancelBtn);    //这里不写remove的实现效果和写的一样，未找到原因
 
-        m_gridLayout->addWidget(m_creatBtn, 1, 1, 2, 2);
+//        m_gridLayout->addWidget(m_creatBtn, 1, 1, 2, 2);
 
         btnDel->setEnabled(true);
         btnUpdate->setEnabled(true);
@@ -270,9 +271,9 @@ void Widget::addUser()
         qDebug()<<__LINE__<<nameItem->text()<<pwdItem->text();
 
         /*写入用户数据*/
-        writeUserData("User" + QString::number(userCount), "UserName", nameItem->text());
-        writeUserData("User" + QString::number(userCount), "Password", pwdItem->text());
-        writeUserData("User" + QString::number(userCount), "Premission", permissItem->text());
+//        writeUserData("User" + QString::number(userCount), "UserName", nameItem->text());
+//        writeUserData("User" + QString::number(userCount), "Password", pwdItem->text());
+//        writeUserData("User" + QString::number(userCount), "Premission", permissItem->text());
         userCount += 1;
     });
 

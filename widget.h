@@ -29,7 +29,8 @@ public:
 
 
 
-/*隐藏BUG:item未双击进入可编辑状态前，编辑item会导致程序崩溃退出*/
+/*隐式BUG：item未双击进入可编辑状态前，编辑item会导致程序崩溃退出*/
+/*显式BUG：ini文件如果已经有了信息则程序崩溃退出*/
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -120,7 +121,7 @@ private:
     QVector<QPushButton*>  btnVec;  //定义这个按钮指针容器的目的是为了方便一次性释放按钮内存
     QSettings *m_userInfo;
     QString m_filePath = QCoreApplication::applicationDirPath()+"/config/userinfo.ini";;
-    int userCount;
+    int userCount = 0;
 
 
 //    void (Widget::*funtionPtr)(QTableWidgetItem *);
