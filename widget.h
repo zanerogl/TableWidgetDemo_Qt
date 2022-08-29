@@ -16,19 +16,6 @@
 #include <QString>
 #include <QtCore>
 
-// 设置tableview某行/列不可编辑 （未使用）
-class ReadOnlyDelegate: public QItemDelegate
-{
-
-public:
-    ReadOnlyDelegate(QWidget *parent = NULL):QItemDelegate(parent)
-    {}
-
-    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,const QModelIndex &index) const override;
-};
-
-
-
 /*隐式BUG：item未双击进入可编辑状态前，编辑item会导致程序崩溃退出*/
 /*显式BUG：ini文件如果已经有了信息则程序崩溃退出*/
 
@@ -66,6 +53,11 @@ public:
      */
     void deleteButtons();
 
+    /**
+     * @brief resetGroupOrder   重置组序（在删除用户后组的序列会打乱，需要重新修改组的序列）
+     */
+    void resetGroupOrder();
+
 public slots:
 
     /**
@@ -85,6 +77,16 @@ public slots:
      * @brief addUser   添加用户
      */
     void addUser();
+
+    /**
+     * @brief on_saveBtnisClicked
+     */
+    void on_saveBtnisClicked();
+
+    /**
+     * @brief on_cancelBtnisClicked
+     */
+    void on_cancelBtnisClicked();
 
     /**
      * @brief writeUserData     写入用户数据
@@ -120,12 +122,12 @@ private:
     QStringList m_headerStr = {"User","Password", "Permission","Option"};
     QVector<QPushButton*>  btnVec;  //定义这个按钮指针容器的目的是为了方便一次性释放按钮内存
     QSettings *m_userInfo;
-    QString m_filePath = QCoreApplication::applicationDirPath()+"/config/userinfo.ini";;
+    QString m_filePath = QCoreApplication::applicationDirPath()+"/config/userinfo.ini";
     int userCount = 0;
 
-
-//    void (Widget::*funtionPtr)(QTableWidgetItem *);
-
+    QStringList m_userName;
+    QStringList m_password;
+    QStringList m_premission;
 };
 #endif // WIDGET_H
 

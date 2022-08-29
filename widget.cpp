@@ -10,18 +10,23 @@ Widget::Widget(QWidget *parent)
     initProfile();
     initUI();
 
-    QList<QString> userName;
-    QList<QString> userPassword;
-    userName<<"Mary"<<"Mike"<<"Jack"<<"Alice"<<"Rose"<<"Jane"<<"Apple"<<"Orange"<<"Peach"<<"Tree";
-    userPassword<<"123"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456";
+    readUserData();
 
-    loadUserInfo(userName, userPassword);
-//    if(userCount != 0)
-//    {
-//        loadUserInfo();
-//    }
+//    QList<QString> userName;
+//    QList<QString> userPassword;
+//    QList<QString> premission;
+//    userName<<"Mary"<<"Mike"<<"Jack"<<"Alice"<<"Rose"<<"Jane"<<"Apple"<<"Orange"<<"Peach"<<"Tree";
+//    userPassword<<"123"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456"<<"456";
+//    premission<<"1"<<"1"<<"1"<<"1"<<"1"<<"1"<<"1"<<"1"<<"1"<<"1";
+//    loadUserInfo(userName, userPassword, premission);
+
+    loadUserInfo(m_userName, m_password, m_premission);
 
     connect(m_creatBtn, &QPushButton::clicked, this, &Widget::addUser);
+
+    connect(m_saveBtn, &QPushButton::clicked, this, &Widget::on_saveBtnisClicked);
+    connect(m_cancelBtn, &QPushButton::clicked, this, &Widget::on_cancelBtnisClicked);
+
 }
 
 Widget::~Widget()
@@ -39,7 +44,7 @@ void Widget::initProfile()
 {
     m_userInfo = new QSettings(m_filePath, QSettings::IniFormat);
     userCount = m_userInfo->allKeys().size()/3; //用户数量 == 组数 == 键数/每组键数
-    qDebug()<<__LINE__<<"userCount: "<<userCount;
+    qDebug()<<__LINE__<<__FUNCTION__<<"userCount:"<<userCount;
 }
 
 void Widget::initUI()
@@ -92,23 +97,25 @@ void Widget::initUI()
     m_cancelBtn->setText("Cancel");
     m_cancelBtn->setStyleSheet("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}");
     m_cancelBtn->hide();
-    qDebug()<<__LINE__;
+    qDebug()<<__LINE__<<__FUNCTION__;
 }
 
 void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword, QList<QString> permission)
 {
-//    ReadOnlyDelegate *readOnlyDelegate = new ReadOnlyDelegate(this);
+    qDebug()<<__LINE__;
     m_tableWidget->clearContents();
     if(userName.size() != userPassword.size() /*|| userCount == 0*/)
     {
         return;
     }
 
-    m_tableWidget->setRowCount(userCount);      //设置行数
+    m_tableWidget->setRowCount(userName.size());      //设置行数，用于测试
+//    m_tableWidget->setRowCount(userCount);      //设置行数
     qDebug()<<__LINE__<<"userCount:"<<userCount;
     qDebug()<<__LINE__<<"rowCount:"<<m_tableWidget->rowCount();
     for(int i = 0; i < m_tableWidget->rowCount(); i++)
     {
+
         /*用户名*/
         QTableWidgetItem *nameItem = new QTableWidgetItem(tr("%1").arg(userName.at(i)));
         nameItem->setFlags(nameItem->flags() & (~Qt::ItemIsEditable));//第一列不可编辑
@@ -146,10 +153,12 @@ void Widget::loadUserInfo(QList<QString> userName, QList<QString> userPassword, 
         connect(btnDel, &QPushButton::clicked, [=](){this->removeUser(nameItem);});
         connect(btnUpdate, &QPushButton::clicked, [=](){this->modifyUserInfo(btnUpdate, nameItem);});
     }
+    qDebug()<<__FUNCTION__;
 }
 
 void Widget::deleteButtons()
 {
+    qDebug()<<__FUNCTION__;
     /*释放table_user表格中动态申请的QPushButton*/
     int len = btnVec.length();
     for(int i = 0; i<len; i++)
@@ -163,23 +172,34 @@ void Widget::deleteButtons()
     }
 }
 
+void Widget::resetGroupOrder()
+{
+
+}
+
 void Widget::removeUser(QTableWidgetItem *item)
 {
-    qDebug()<<__LINE__<<"userCount:"<<userCount;
+    qDebug()<<__FUNCTION__;
     if(QMessageBox::question(this, "Tip","Are you sure you want to delete?", QMessageBox::Yes|QMessageBox::No)== QMessageBox::Yes)
     {
         userCount--;
         qDebug()<<__LINE__<<"userCount:"<<userCount;
         int row = m_tableWidget->row(item);
+        qDebug()<<row;
         m_tableWidget->removeRow(row);
+        deleteUserData("User" + QString::number(row), "UserName");
+        deleteUserData("User" + QString::number(row), "Password");
+        deleteUserData("User" + QString::number(row), "Premission");
 //        deleteUserData("User" + QString::number(userCount), "UserName");
 //        deleteUserData("User" + QString::number(userCount), "Password");
 //        deleteUserData("User" + QString::number(userCount), "Premission");
+
     }
 }
 
 void Widget::modifyUserInfo(QPushButton *btn, QTableWidgetItem *item)
 {
+    qDebug()<<__FUNCTION__;
     int row = m_tableWidget->row(item);
     int column = m_tableWidget->column(item);
     Qt::ItemFlags flag1 = m_tableWidget->item(row, column)->flags();
@@ -203,10 +223,11 @@ void Widget::modifyUserInfo(QPushButton *btn, QTableWidgetItem *item)
 
 void Widget::addUser()
 {
+    qDebug()<<__FUNCTION__;
     qDebug()<<__LINE__<<"CreatBtn is clicked";
     m_tableWidget->setRowCount(m_tableWidget->rowCount()+1);
 
-    qDebug()<<__LINE__<<"Row count: "<<m_tableWidget->rowCount()<< userCount;
+    qDebug()<<__LINE__<<"Row count:"<<m_tableWidget->rowCount()<<"userCount:"<<userCount;
 
     /*用户名*/
     QTableWidgetItem *nameItem = new QTableWidgetItem(tr("%1").arg("username"));
@@ -224,12 +245,26 @@ void Widget::addUser()
     permissItem->setTextAlignment(Qt::AlignCenter);
     m_tableWidget->setItem(m_tableWidget->rowCount()-1, 2, permissItem);
 
+    /*按钮列未设置，在点击save按钮后设置，目前存在BUG：按钮列在未设置之前可编辑*/
+
+    /*隐藏creatBtn*/
+    m_creatBtn->hide();
+    m_saveBtn->show();
+    m_cancelBtn->show();
+}
+
+void Widget::on_saveBtnisClicked()
+{
+    m_saveBtn->hide();
+    m_cancelBtn->hide();
+    m_creatBtn->show();
+
     /*添加删除按钮和修改按钮*/
     QPushButton *btnDel = new QPushButton("Delete");
-    btnDel->setEnabled(false);
+    btnDel->setEnabled(true);
     btnDel->setStyleSheet(QString::fromUtf8("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}"));
     QPushButton *btnUpdate = new QPushButton("Modify");
-    btnUpdate->setEnabled(false);
+    btnUpdate->setEnabled(true);
     btnUpdate->setStyleSheet(QString::fromUtf8("QPushButton{background: white; color: blacke; border: 2px solid black; border-radius:10px; padding:2px 4px;}"));
     QWidget *widget = new QWidget;
     QHBoxLayout *hboxlayout = new QHBoxLayout(widget);
@@ -238,78 +273,71 @@ void Widget::addUser()
     hboxlayout->addWidget(btnUpdate);
     m_tableWidget->setCellWidget(m_tableWidget->rowCount()-1, 3,  widget);
 
-    /*隐藏creatBtn*/
-    m_creatBtn->hide();
+    /*这里用了偷懒的方式给最后一行里的3列设置属性，这可能存在隐患，如果后期要用插入的方式创建新用户则会有BUG*/
+    int num = m_tableWidget->rowCount()-1;      //获取最后一行的编号
 
-//    m_gridLayout->removeWidget(m_creatBtn);     //这里不写remove的实现效果和写的一样，未找到原因
+    QTableWidgetItem *tempItem0 = m_tableWidget->item(num, 0);
+    tempItem0->setFlags(m_tableWidget->item(num, 0)->flags() & (~Qt::ItemIsEditable));  //第一列不可编辑
 
-    m_saveBtn->show();
-    m_cancelBtn->show();
+    QTableWidgetItem *tempItem1 = m_tableWidget->item(num, 1);
+    tempItem1->setFlags(tempItem1->flags() & (~Qt::ItemIsEditable));    //第二列不可编辑
 
-    /*save按钮按下后添加行，写入配置文件*/
-    connect(m_saveBtn, &QPushButton::clicked, this, [=]()
-    {
-        qDebug()<<"SaveBtn is clicked---------------------";
-        m_saveBtn->hide();
-//        m_gridLayout->removeWidget(m_saveBtn);      //这里不写remove的实现效果和写的一样，未找到原因
-        m_cancelBtn->hide();
-//        m_gridLayout->removeWidget(m_cancelBtn);    //这里不写remove的实现效果和写的一样，未找到原因
+    QTableWidgetItem *tempItem2 = m_tableWidget->item(num, 2);
 
-//        m_gridLayout->addWidget(m_creatBtn, 1, 1, 2, 2);
+    QTableWidgetItem *tempItem3 = m_tableWidget->item(num, 2);  //第三列没有item，用第二列的，因为removeUser()和modifyUserInfo()只需要通过item获取行号就可以了
+    connect(btnDel, &QPushButton::clicked, [=](){ this->removeUser(tempItem3); });
+    connect(btnUpdate, &QPushButton::clicked, [=](){ this->modifyUserInfo(btnUpdate, tempItem3); });
 
-        btnDel->setEnabled(true);
-        btnUpdate->setEnabled(true);
+    writeUserData("User" + QString::number(userCount), "UserName", tempItem0->text());
+    writeUserData("User" + QString::number(userCount), "Password", tempItem1->text());
+    writeUserData("User" + QString::number(userCount), "Premission", tempItem2->text());
 
-        nameItem->setFlags(nameItem->flags() & (~Qt::ItemIsEditable));  //第一列不可编辑
-        pwdItem->setFlags(pwdItem->flags() & (~Qt::ItemIsEditable));    //第二列不可编辑
+    userCount++;
 
-        connect(btnDel, &QPushButton::clicked, this, [=](){this->removeUser(nameItem);});
-        connect(btnUpdate, &QPushButton::clicked, this, [=](){this->modifyUserInfo(btnUpdate, nameItem);});
+    qDebug()<<__FUNCTION__;
+}
 
-        m_creatBtn->show();
-
-        qDebug()<<__LINE__<<nameItem->text()<<pwdItem->text();
-
-        /*写入用户数据*/
-//        writeUserData("User" + QString::number(userCount), "UserName", nameItem->text());
-//        writeUserData("User" + QString::number(userCount), "Password", pwdItem->text());
-//        writeUserData("User" + QString::number(userCount), "Premission", permissItem->text());
-        userCount += 1;
-    });
-
-    connect(m_cancelBtn, &QPushButton::clicked, this, [=]()
-    {
-        m_saveBtn->hide();
-        m_gridLayout->removeWidget(m_saveBtn);      //这里不写remove的实现效果和写的一样，未找到原因
-        m_cancelBtn->hide();
-        m_gridLayout->removeWidget(m_cancelBtn);    //这里不写remove的实现效果和写的一样，未找到原因
-        m_gridLayout->addWidget(m_creatBtn, 1, 1, 2, 2);
-        m_creatBtn->show();
-        m_tableWidget->removeRow(m_tableWidget->rowCount()-1);  //删除未添加信息的行
-    });
+void Widget::on_cancelBtnisClicked()
+{
+    m_saveBtn->hide();
+    m_cancelBtn->hide();
+    m_creatBtn->show();
+    m_tableWidget->removeRow(m_tableWidget->rowCount()-1);  //删除未添加信息的行
+    qDebug()<<__FUNCTION__;
 }
 
 void Widget::writeUserData(QString group, QString keyName, QString valueName)
 {
+    qDebug()<<__FUNCTION__;
     m_userInfo->setValue(group + "/" + keyName, valueName);
 }
 
 void Widget::deleteUserData(QString group, QString keyName)
 {
-    qDebug()<<__LINE__<<userCount;
-    qDebug()<<group + "/" + keyName;
+    qDebug()<<__FUNCTION__;
     m_userInfo->remove(group + "/" + keyName);
 }
 
 void Widget::readUserData()
 {
+    QString group = "User";
+    QString keyName0 = "UserName";
+    QString keyName1 = "Password";
+    QString keyName2 = "Premission";
+
+    qDebug()<<__FUNCTION__;
+    for(int i = 0; i < m_userInfo->childGroups().size(); i++)
+    {
+//        qDebug()<<m_userInfo->value(group + QString::number(i+10) + "/" + keyName0, 1024).toString();
+//        m_userName<<m_userInfo->value(group + QString::number(i+10) + "/" + keyName0, 1024).toString();
+//        m_password<<m_userInfo->value(group + QString::number(i+10) + "/" + keyName1, 1024).toString();
+//        m_premission<<m_userInfo->value(group + QString::number(i+10) + "/" + keyName2, 1024).toString();
+        qDebug()<<m_userInfo->value(group + QString::number(i) + "/" + keyName0, 1024).toString();
+        m_userName<<m_userInfo->value(group + QString::number(i) + "/" + keyName0, 1024).toString();
+        m_password<<m_userInfo->value(group + QString::number(i) + "/" + keyName1, 1024).toString();
+        m_premission<<m_userInfo->value(group + QString::number(i) + "/" + keyName2, 1024).toString();
+    }
+
 
 }
 
-QWidget *ReadOnlyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const //final
-{
-    Q_UNUSED(parent)
-    Q_UNUSED(option)
-    Q_UNUSED(index)
-    return NULL;
-}
