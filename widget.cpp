@@ -7,6 +7,7 @@ Widget::Widget(QWidget *parent)
 {
     ui->setupUi(this);
 
+    resetGroupOrder();
     initProfile();
     initUI();
 
@@ -174,7 +175,17 @@ void Widget::deleteButtons()
 
 void Widget::resetGroupOrder()
 {
-
+    for(int i = 1; i < userCount*5; i+=5)	//i是行数
+    {
+        string group = "[User" + to_string((i-1)/5) + "]";
+        char chr[20];
+        strcpy(chr, group.c_str());
+//        qDebug()<<__LINE__<<m_filePath;
+//        QByteArray ba = m_filePath.toLatin1();
+//        char *path = ba.data();
+//        ModifyLineData(path, i, chr);
+        ModifyLineData("D:\\Project\\C++\\Qt\\Demo\\build-TableWidgetDemo-Desktop_Qt_5_14_2_MinGW_64_bit-Debug\\debug\\config\\userinfo.ini", i, chr);
+    }
 }
 
 void Widget::removeUser(QTableWidgetItem *item)
@@ -190,6 +201,7 @@ void Widget::removeUser(QTableWidgetItem *item)
         deleteUserData("User" + QString::number(row), "UserName");
         deleteUserData("User" + QString::number(row), "Password");
         deleteUserData("User" + QString::number(row), "Premission");
+        resetGroupOrder();
 //        deleteUserData("User" + QString::number(userCount), "UserName");
 //        deleteUserData("User" + QString::number(userCount), "Password");
 //        deleteUserData("User" + QString::number(userCount), "Premission");
@@ -316,6 +328,7 @@ void Widget::deleteUserData(QString group, QString keyName)
 {
     qDebug()<<__FUNCTION__;
     m_userInfo->remove(group + "/" + keyName);
+//    resetGroupOrder();
 }
 
 void Widget::readUserData()
@@ -337,7 +350,47 @@ void Widget::readUserData()
         m_password<<m_userInfo->value(group + QString::number(i) + "/" + keyName1, 1024).toString();
         m_premission<<m_userInfo->value(group + QString::number(i) + "/" + keyName2, 1024).toString();
     }
-
-
 }
 
+void Widget::ModifyLineData(const char *fileName, int lineNum, const char *lineData)
+{
+//    qDebug()<<__FUNCTION__;
+    ifstream in;
+    in.open(fileName);
+
+    string strFileData = "";
+    int line = 1;
+    char tmpLineData[1024] = {0};
+    while(in.getline(tmpLineData, sizeof(tmpLineData)))
+    {
+        if (line == lineNum)
+        {
+            strFileData += CharToStr(lineData);
+            strFileData += "\n";
+        }
+        else
+        {
+            strFileData += CharToStr(tmpLineData);
+            strFileData += "\n";
+        }
+        line++;
+    }
+    in.close();
+
+    //写入文件
+    ofstream out;
+    out.open(fileName);
+    out.flush();
+    out<<strFileData;
+    out.close();
+}
+
+string Widget::CharToStr(const char *contentChar)
+{
+    string tempStr;
+    for(int i=0; contentChar[i]!='\0'; i++)
+    {
+        tempStr+=contentChar[i];
+    }
+    return tempStr;
+}

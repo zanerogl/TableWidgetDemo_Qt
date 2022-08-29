@@ -16,6 +16,12 @@
 #include <QString>
 #include <QtCore>
 
+#include <iostream>
+#include <fstream>
+#include <cstring>
+#include <string>
+using namespace std;
+
 /*隐式BUG：item未双击进入可编辑状态前，编辑item会导致程序崩溃退出*/
 /*显式BUG：ini文件如果已经有了信息则程序崩溃退出*/
 
@@ -108,6 +114,20 @@ public slots:
      */
     void readUserData();
 
+    /**
+     * @brief ModifyLineData    修改文件行数据
+     * @param fileName
+     * @param lineNum
+     * @param lineData
+     */
+    void ModifyLineData(const char* fileName, int lineNum, const char* lineData);
+
+    /**
+     * @brief CharToStr     Char 转 string
+     * @param contentChar
+     * @return
+     */
+    string CharToStr(const char * contentChar);
 
 private:
     Ui::Widget *ui;
